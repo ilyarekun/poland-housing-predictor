@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Poland Housing</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous"> 
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+
+        body {
+          font-family: 'Inter', sans-serif;
+        }
+        .formbold-form-wrapper img {
+            width: 100%;
+            height: auto;
+        }
+        .intro-text {
+            text-align: center; 
+            font-size: 18px; 
+            margin: 10px;
+        }
+        .formbold-main-wrapper {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 48px;
+        }
+        .formbold-form-wrapper {
+          margin: 0 auto;
+          max-width: 570px;
+          width: 100%;
+          background: white;
+          padding: 40px;
+        }
+        .formbold-input-group {
+          margin-bottom: 18px;
+        }
+        .formbold-form-select {
+          width: 100%;
+          padding: 12px 22px;
+          border-radius: 5px;
+          border: 1px solid #dde3ec;
+          background: #ffffff;
+          font-size: 16px;
+          color: #536387;
+          outline: none;
+          resize: none;
+        }
+        .formbold-input-radio-wrapper {
+          margin-bottom: 25px;
+        }
+        .formbold-radio-flex {
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+        }
+        .formbold-radio-label {
+          font-size: 14px;
+          line-height: 24px;
+          color: #07074d;
+          position: relative;
+          padding-left: 25px;
+          cursor: pointer;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+        }
+        .formbold-input-radio {
+          position: absolute;
+          opacity: 0;
+          cursor: pointer;
+        }
+        .formbold-radio-checkmark {
+          position: absolute;
+          top: -1px;
+          left: 0;
+          height: 18px;
+          width: 18px;
+          background-color: #ffffff;
+          border: 1px solid #dde3ec;
+          border-radius: 50%;
+        }
+        .formbold-radio-label .formbold-input-radio:checked ~ .formbold-radio-checkmark {
+          background-color: #6a64f1;
+        }
+        .formbold-radio-checkmark:after {
+          content: '';
+          position: absolute;
+          display: none;
+        }
+        .formbold-radio-label .formbold-input-radio:checked ~ .formbold-radio-checkmark:after {
+          display: block;
+        }
+        .formbold-radio-label .formbold-radio-checkmark:after {
+          top: 50%;
+          left: 50%;
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          background: #ffffff;
+          transform: translate(-50%, -50%);
+        }
+        .formbold-form-input {
+          width: 100%;
+          padding: 13px 22px;
+          border-radius: 5px;
+          border: 1px solid #dde3ec;
+          background: #ffffff;
+          font-weight: 500;
+          font-size: 16px;
+          color: #07074d;
+          outline: none;
+          resize: none;
+        }
+        .formbold-form-input::placeholder {
+          color: #536387;
+        }
+        .formbold-form-input:focus {
+          border-color: #6a64f1;
+          box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.05);
+        }
+        .formbold-form-label {
+          color: #07074d;
+          font-size: 14px;
+          line-height: 24px;
+          display: block;
+          margin-bottom: 10px;
+        }
+        .formbold-btn {
+          text-align: center;
+          width: 100%;
+          font-size: 16px;
+          border-radius: 5px;
+          padding: 14px 25px;
+          border: none;
+          font-weight: 500;
+          background-color: #6a64f1;
+          color: white;
+          cursor: pointer;
+          margin-top: 25px;
+        }
+        .formbold-btn:hover {
+          box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.05);
+        }
+        #prediction-result {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #07074d;
+        }
+    </style>
+    <script>
+        window.URL_S = "__URL_S__";
+      </script>
+</head>
+
+<body>
+    <div class="formbold-main-wrapper">
+        <div class="formbold-form-wrapper">
+            <img src='static/pic3.png'>
+            <br><br>
+            <p class="intro-text">
+                On this page, you can predict housing prices in Poland. 
+                The parameters are listed in descending order of their influence
+                on the prediction, based on data collected from January to June 2024.
+            </p>
+            <br><br>
+            <form id="predict-form" >
+
+                <!-- 1. squareMeters -->
+                <div class="formbold-input-group">
+                    <label for="squareMeters" class="formbold-form-label">Square Meters</label>
+                    <input 
+                        type="range" 
+                        name="squareMeters" 
+                        id="squareMeters" 
+                        min="25" 
+                        max="150" 
+                        step="0.1" 
+                        class="formbold-form-input"
+                        oninput="squareMetersValue.innerText = this.value"
+                    />
+                    <span id="squareMetersValue">50</span> m²
+                </div>
+
+                <!-- 2. rooms -->
+                <div class="formbold-input-group">
+                    <label for="rooms" class="formbold-form-label">Number of Rooms</label>
+                    <input
+                        type="number"
+                        name="rooms"
+                        id="rooms"
+                        min="1"
+                        max="6"
+                        step="1"
+                        placeholder="Enter number of rooms"
+                        class="formbold-form-input"
+                    />
+                </div>
+
+                <div id="map"></div>
+
+                <br>
+                <input type="hidden" name="latitude" id="latitude">
+                <input type="hidden" name="longitude" id="longitude">
+
+
+
+                <!-- 4. city -->
+                <div class="formbold-input-group">
+                    <label for="city" class="formbold-form-label">City</label>
+                    <select class="formbold-form-select" name="city" id="city">
+                        <option value=0>Szczecin</option>
+                        <option value=1>Gdynia</option>
+                        <option value=2>Krakow</option>
+                        <option value=3>Poznan</option>
+                        <option value=4>Bialystok</option>
+                        <option value=5>Gdansk</option>
+                        <option value=6>Wroclaw</option>
+                        <option value=7>Radom</option>
+                        <option value=8>Rzeszow</option>
+                        <option value=9>Lodz</option>
+                        <option value=10>Katowice</option>
+                        <option value=11>Lublin</option>
+                        <option value=12>Czestochowa</option>
+                        <option value=13>Warszawa</option>
+                        <option value=14>Bydgoszcz</option>
+                    </select>
+                </div>
+
+
+                <!-- 6. centreDistance -->
+                <div class="formbold-input-group">
+                    <label for="centreDistance" class="formbold-form-label">Distance to Centre (km)</label>
+                    <input
+                        type="number"
+                        name="centreDistance"
+                        id="centreDistance"
+                        min="0.02"
+                        max="16.62"
+                        step="0.01"
+                        placeholder="Enter distance to centre"
+                        class="formbold-form-input"
+                    />
+                </div>
+
+                <!-- 7. poiCount -->
+                <div class="formbold-input-group">
+                    <label for="poiCount" class="formbold-form-label">Points of Interest Count</label>
+                    <input
+                        type="number"
+                        name="poiCount"
+                        id="poiCount"
+                        min="0"
+                        max="210"
+                        step="1"
+                        placeholder="Enter number of POIs"
+                        class="formbold-form-input"
+                    />
+                </div>
+
+                 <!-- 8. type -->
+                 <div class="formbold-input-group">
+                    <label for="type" class="formbold-form-label">Building Type</label>
+                    <select class="formbold-form-select" name="type" id="type">
+                        <option value=0>Block of Flats</option>
+                        <option value=1>Tenement</option>
+                        <option value=2>Apartment Building</option>
+                    </select>
+                </div>
+
+                <!-- 9. floorCount -->
+                <div class="formbold-input-group">
+                    <label for="floorCount" class="formbold-form-label">Number of Floors in Building</label>
+                    <input
+                        type="number"
+                        name="floorCount"
+                        id="floorCount"
+                        min="1"
+                        max="30"
+                        step="1"
+                        placeholder="Enter number of floors"
+                        class="formbold-form-input"
+                    />
+                </div>
+
+                <!-- 10. floor -->
+                <div class="formbold-input-group">
+                    <label for="floor" class="formbold-form-label">Floor Number</label>
+                    <input
+                        type="number"
+                        name="floor"
+                        id="floor"
+                        min="1"
+                        max="30"
+                        step="1"
+                        placeholder="Enter floor number"
+                        class="formbold-form-input"
+                    />
+                </div>
+
+                <!-- 11. hasElevator -->
+                <div class="formbold-input-radio-wrapper">
+                    <label class="formbold-form-label">Has Elevator</label>
+                    <div class="formbold-radio-flex">
+                        <div class="formbold-radio-group">
+                            <label class="formbold-radio-label">
+                                <input
+                                    class="formbold-input-radio"
+                                    type="radio"
+                                    name="hasElevator"
+                                    id="hasElevatorYes"
+                                    value=1
+                                />
+                                Yes
+                                <span class="formbold-radio-checkmark"></span>
+                            </label>
+                        </div>
+                        <div class="formbold-radio-group">
+                            <label class="formbold-radio-label">
+                                <input
+                                    class="formbold-input-radio"
+                                    type="radio"
+                                    name="hasElevator"
+                                    id="hasElevatorNo"
+                                    value=0
+                                />
+                                No
+                                <span class="formbold-radio-checkmark"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 12. hasBalcony -->
+                <div class="formbold-input-radio-wrapper">
+                    <label class="formbold-form-label">Has Balcony</label>
+                    <div class="formbold-radio-flex">
+                        <div class="formbold-radio-group">
+                            <label class="formbold-radio-label">
+                                <input
+                                    class="formbold-input-radio"
+                                    type="radio"
+                                    name="hasBalcony"
+                                    id="hasBalconyYes"
+                                    value=1
+                                />
+                                Yes
+                                <span class="formbold-radio-checkmark"></span>
+                            </label>
+                        </div>
+                        <div class="formbold-radio-group">
+                            <label class="formbold-radio-label">
+                                <input
+                                    class="formbold-input-radio"
+                                    type="radio"
+                                    name="hasBalcony"
+                                    id="hasBalconyNo"
+                                    value=0
+                                />
+                                No
+                                <span class="formbold-radio-checkmark"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 13. hasParkingSpace -->
+                <div class="formbold-input-radio-wrapper">
+                    <label class="formbold-form-label">Has Parking Space</label>
+                    <div class="formbold-radio-flex">
+                        <div class="formbold-radio-group">
+                            <label class="formbold-radio-label">
+                                <input
+                                    class="formbold-input-radio"
+                                    type="radio"
+                                    name="hasParkingSpace"
+                                    id="hasParkingSpaceYes"
+                                    value=1
+                                />
+                                Yes
+                                <span class="formbold-radio-checkmark"></span>
+                            </label>
+                        </div>
+                        <div class="formbold-radio-group">
+                            <label class="formbold-radio-label">
+                                <input
+                                    class="formbold-input-radio"
+                                    type="radio"
+                                    name="hasParkingSpace"
+                                    id="hasParkingSpaceNo"
+                                    value=0
+                                />
+                                No
+                                <span class="formbold-radio-checkmark"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 14. hasStorageRoom -->
+                <div class="formbold-input-radio-wrapper">
+                    <label class="formbold-form-label">Has Storage Room</label>
+                    <div class="formbold-radio-flex">
+                        <div class="formbold-radio-group">
+                            <label class="formbold-radio-label">
+                                <input
+                                    class="formbold-input-radio"
+                                    type="radio"
+                                    name="hasStorageRoom"
+                                    id="hasStorageRoomYes"
+                                    value=1
+                                />
+                                Yes
+                                <span class="formbold-radio-checkmark"></span>
+                            </label>
+                        </div>
+                        <div class="formbold-radio-group">
+                            <label class="formbold-radio-label">
+                                <input
+                                    class="formbold-input-radio"
+                                    type="radio"
+                                    name="hasStorageRoom"
+                                    id="hasStorageRoomNo"
+                                    value=0
+                                />
+                                No
+                                <span class="formbold-radio-checkmark"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 15. hasSecurity -->
+                <div class="formbold-input-radio-wrapper">
+                    <label class="formbold-form-label">Has Security</label>
+                    <div class="formbold-radio-flex">
+                        <div class="formbold-radio-group">
+                            <label class="formbold-radio-label">
+                                <input
+                                    class="formbold-input-radio"
+                                    type="radio"
+                                    name="hasSecurity"
+                                    id="hasSecurityYes"
+                                    value=1
+                                />
+                                Yes
+                                <span class="formbold-radio-checkmark"></span>
+                            </label>
+                        </div>
+                        <div class="formbold-radio-group">
+                            <label class="formbold-radio-label">
+                                <input
+                                    class="formbold-input-radio"
+                                    type="radio"
+                                    name="hasSecurity"
+                                    id="hasSecurityNo"
+                                    value=0
+                                />
+                                No
+                                <span class="formbold-radio-checkmark"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="formbold-btn">Predict</button>
+            </form>
+            <div id="prediction-result"></div> 
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+        crossorigin="anonymous"></script> 
+
+    <script src="static/script.js"></script>
+
+</body>
+</html>

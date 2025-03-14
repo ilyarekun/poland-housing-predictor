@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    networks:
+      - dock-network
+    restart: always 
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - URL_S=http://localhost:5000/read-form
+    networks:
+      - dock-network
+    restart: always
+    depends_on:
+      - backend 
+
+networks:
+  guestbook-network:
+    driver: bridge
+    

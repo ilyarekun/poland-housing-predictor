@@ -1,3 +1,4 @@
 venv/
 data/
 data/9/
+backend/random_forest_model.pkl
