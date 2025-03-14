@@ -64,8 +64,8 @@ Both containers are managed using **Docker Compose**.
 ## Installation & Setup
 - clone the repo: `git clone https://github.com/ilyarekun/poland-housing-predictor.git`
 - create and activate your env:
-    - python -m venv venv
-    - source venv/bin/activate
+    - `python -m venv venv`
+    - `source venv/bin/activate`
 - run `pip install -r requirements.txt`
 - add venv to kernels:
     - `python -m ipykernel install --user --name=venv --display-name "Python (venv)"`
