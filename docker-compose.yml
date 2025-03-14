@@ -21,6 +21,6 @@ services:
       - backend 
 
 networks:
-  guestbook-network:
+  dock-network:
     driver: bridge
     

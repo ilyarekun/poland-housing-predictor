@@ -1,5 +1,7 @@
 # Poland Housing Predictor
 
+![Head](frontend/static/pic3.png)
+
 
 ## Table of Contents
 1. [Overview](#overview)
