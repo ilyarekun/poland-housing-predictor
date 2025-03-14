@@ -1,6 +1,8 @@
 # Poland Housing Predictor
 
-![Head](frontend/static/pic3.png){: .center-img }
+<p align="center">
+  <img src="frontend/static/pic3.png" alt="Head">
+</p>
 
 
 
