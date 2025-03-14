@@ -1,6 +1,7 @@
 # Poland Housing Predictor
 
-![Head](frontend/static/pic3.png)
+![Head](frontend/static/pic3.png){: .center-img }
+
 
 
 ## Table of Contents
